@@ -28,4 +28,4 @@ jobs:
         run: npm run build --if-present
 
       - name: Restart PM2 Process
-        run: sudo pm2 restart backend --update-env
+        run: sudo pm2 restart server
