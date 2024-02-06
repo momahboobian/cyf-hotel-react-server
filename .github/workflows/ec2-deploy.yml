@@ -23,15 +23,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: SSH into EC2 and deploy
-        uses: appleboy/ssh-action@master
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.5.3
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          port: ${{ secrets.EC2_SSH_PORT }}
-          script: |
-            cd /path/to/your/backend
-            git pull origin main
-            npm install
-            sudo pm2 restart server
+          ssh-private-key: ${{ secrets.EC2_PRIVATE_KEY }}
+
+      - name: SSH into EC2 and deploy
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_PRIVATE_KEY }} ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} 'cd /cyf-hotel-react-server && git pull origin main && npm install && sudo pm2 restart server'
