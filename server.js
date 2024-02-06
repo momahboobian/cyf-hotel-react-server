@@ -1,29 +1,34 @@
-const express = require("express");
-const cors = require("cors");
-const jsonEndpoints = require("./jsonEndpoints");
-const { testConnection, createTable, populateTable, hasRecords, db } = require("./databaseSetup");
-const dbEndpoints = require("./dbEndpoints");
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
-const port = process.env.PORT || 5001;
-require("dotenv").config();
+const PORT = process.env.PORT || 5000;
 
-app.use(express.json());
-app.use(cors());
+app.use(express.static('public'));
 
+app.get('/bookings', (req, res) => {
+  const filePath = path.join(__dirname, 'data', 'fakeBookings.json');
 
-testConnection()
-  .then(createTable)
-  .then(populateTable)
-  .catch((error) => {
-    console.error("Error setting up database:", error);
+  // Read the file asynchronously
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      console.error('Error reading file:', err);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+
+    try {
+      // Parse the JSON data
+      const bookings = JSON.parse(data);
+      res.json(bookings);
+    } catch (error) {
+      console.error('Error parsing JSON:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
-  
-app.use("/videos", jsonEndpoints);
-app.use("/", dbEndpoints(db));
+});
 
-const server = app.listen(port, () => {
-const { address, port } = server.address();
-const host = address === '::' ? 'localhost' : address;
-console.log(`Server is running at http://${host}:${port}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
